@@ -1,0 +1,526 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap");
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(
+    ellipse at center,
+    #25201c 0%,
+    #100e0d 55%,
+    #050505 100%
+  );
+  color: #e5d2a6;
+  /* font-family: "Cormorant Garamond", serif; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.scene {
+  width: min(94vw, 1200px);
+  text-align: center;
+}
+
+.board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 3px solid #80633e;
+  border-radius: 12px;
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(120, 79, 43, 0.18),
+      transparent 75%
+    ),
+    repeating-linear-gradient(
+      2deg,
+      rgba(30, 15, 8, 0.12) 0px,
+      rgba(30, 15, 8, 0.12) 2px,
+      transparent 3px,
+      transparent 8px
+    ),
+    linear-gradient(135deg, #50341f, #281a13 55%, #412b1b);
+  box-shadow:
+    0 0 40px rgba(0, 0, 0, 0.8),
+    inset 0 0 35px rgba(0, 0, 0, 0.7);
+  padding: 2% 4%;
+}
+
+.board::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(210, 177, 119, 0.55);
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+.board-header {
+  height: 22%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.title {
+  font-family: "Cinzel", serif;
+  font-size: clamp(16px, 2.5vw, 30px);
+  letter-spacing: 0.3em;
+}
+
+.subtitle {
+  font-size: clamp(9px, 1vw, 13px);
+  letter-spacing: 0.25em;
+  opacity: 0.7;
+}
+
+.ornament {
+  font-size: clamp(20px, 3vw, 34px);
+  line-height: 1;
+  color: #d6b77b;
+}
+
+.special-answers {
+  height: 10%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.board-symbol {
+  font-family: "Cinzel", serif;
+  font-size: clamp(13px, 2vw, 24px);
+  letter-spacing: 0.2em;
+}
+
+.alphabet {
+  height: 27%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12%;
+}
+
+.letter-row {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  align-items: center;
+}
+
+.letter {
+  /* font-family: "Cinzel", serif; */
+  font-size: clamp(14px, 2.2vw, 27px);
+  color: #e6d2a9;
+  transition:
+    color 0.2s,
+    text-shadow 0.2s;
+}
+
+.letter.active {
+  color: #fff1bf;
+  text-shadow:
+    0 0 12px #ffcf77,
+    0 0 25px #ffae42;
+}
+
+.numbers {
+  height: 12%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4%;
+  font-family: "Cinzel", serif;
+  font-size: clamp(12px, 1.7vw, 20px);
+  opacity: 0.75;
+}
+
+.board-footer {
+  height: 12%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.planchette {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  top: 50%;
+  width: clamp(35px, 5vw, 58px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e9d7ae, #9a774c 70%, #47301d);
+  border: 2px solid #c9a66c;
+  box-shadow:
+    0 4px 12px #0009,
+    0 0 18px #f1c98244;
+  transform: translate(-50%, -50%);
+  transition:
+    left 0.55s ease-in-out,
+    top 0.55s ease-in-out;
+  pointer-events: none;
+}
+
+.planchette-window {
+  position: absolute;
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  background: #382419;
+  top: 25%;
+  left: 35%;
+  box-shadow: inset 0 0 5px #000;
+}
+
+.planchette-tip {
+  position: absolute;
+  left: 50%;
+  top: 85%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 27px solid #a47d4d;
+}
+
+.response-area {
+  margin-top: 24px;
+  min-height: 65px;
+}
+
+.status {
+  font-family: "Cinzel", serif;
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  color: #a98d62;
+}
+
+.response {
+  margin-top: 8px;
+  font-family: "Cinzel", serif;
+  font-size: clamp(18px, 3vw, 30px);
+  letter-spacing: 0.18em;
+  color: #f0d9a8;
+  text-shadow: 0 0 15px #c48e45;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+button {
+  padding: 12px 20px;
+  color: #e6d2a9;
+  background: #211912;
+  border: 1px solid #80633e;
+  font-family: "Cinzel", serif;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #49321f;
+}
+
+@media (max-width: 650px) {
+  .scene {
+    width: 98vw;
+  }
+
+  .board {
+    padding: 2%;
+  }
+
+  .alphabet {
+    gap: 8%;
+  }
+
+  .letter {
+    font-size: 3vw;
+  }
+}
+
+/* =========================================
+   ATMOSPHERE
+========================================= */
+
+body {
+  position: relative;
+  isolation: isolate;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    #30221a 0%,
+    #17100d 48%,
+    #050403 100%
+  );
+}
+
+/* Floating light and fog */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse at 30% 40%,
+      rgba(184, 129, 70, 0.1),
+      transparent 35%
+    ),
+    radial-gradient(
+      ellipse at 75% 65%,
+      rgba(120, 143, 154, 0.07),
+      transparent 40%
+    ),
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(255, 205, 133, 0.045),
+      transparent 55%
+    );
+  filter: blur(35px);
+  animation: fogDrift 22s ease-in-out infinite alternate;
+}
+
+/* Film grain */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image: repeating-radial-gradient(
+    circle at 17% 32%,
+    transparent 0,
+    rgba(255, 255, 255, 0.15) 0.6px,
+    transparent 1px,
+    transparent 3px
+  );
+  background-size: 5px 5px;
+  animation: grainShift 0.25s steps(2) infinite;
+}
+
+@keyframes fogDrift {
+  0% {
+    transform: translate(-5%, 2%) scale(1);
+    opacity: 0.65;
+  }
+
+  35% {
+    transform: translate(3%, -3%) scale(1.08);
+    opacity: 1;
+  }
+
+  70% {
+    transform: translate(-2%, 4%) scale(1.04);
+    opacity: 0.75;
+  }
+
+  100% {
+    transform: translate(5%, -2%) scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+@keyframes grainShift {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(1px, -1px);
+  }
+  50% {
+    transform: translate(-1px, 1px);
+  }
+  75% {
+    transform: translate(1px, 1px);
+  }
+  100% {
+    transform: translate(-1px, -1px);
+  }
+}
+
+/* Board illumination flicker */
+.board {
+  animation: boardFlicker 8s infinite;
+  z-index: 1;
+}
+
+.board {
+  animation: boardFlicker 7s infinite;
+  transform-origin: center;
+}
+
+@keyframes boardFlicker {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+
+  8% {
+    filter: brightness(0.94);
+  }
+
+  10% {
+    filter: brightness(1.12);
+  }
+
+  11% {
+    filter: brightness(0.82);
+  }
+
+  13% {
+    filter: brightness(1.05);
+  }
+
+  28% {
+    filter: brightness(0.96);
+  }
+
+  29% {
+    filter: brightness(0.72);
+  }
+
+  30% {
+    filter: brightness(1.1);
+  }
+
+  31% {
+    filter: brightness(0.95);
+  }
+
+  55% {
+    filter: brightness(1.04);
+  }
+
+  56% {
+    filter: brightness(0.86);
+  }
+
+  58% {
+    filter: brightness(1.13);
+  }
+
+  59% {
+    filter: brightness(1);
+  }
+
+  78% {
+    filter: brightness(0.92);
+  }
+
+  80% {
+    filter: brightness(1.08);
+  }
+}
+
+/* Make sure the interface sits above the atmosphere */
+.scene {
+  position: relative;
+  z-index: 2;
+}
+
+/* =========================================
+   PARTICLE CANVAS
+========================================= */
+
+#ambience {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* =========================================
+   CURVED ALPHABET
+========================================= */
+
+.alphabet {
+  position: relative;
+  display: block;
+  height: 27%;
+}
+
+.letter-row {
+  display: contents;
+}
+
+.letter {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  z-index: 1;
+  transition:
+    color 0.25s,
+    text-shadow 0.25s;
+  cursor: default;
+}
+
+.letter.active {
+  color: #fff3ce;
+  text-shadow:
+    0 0 8px #ffdc9c,
+    0 0 20px #ffbd62,
+    0 0 35px #d68a36;
+}
+
+/* =========================================
+   PLANCHETTE
+========================================= */
+
+.planchette {
+  width: clamp(66px, 7vw, 88px);
+  aspect-ratio: 1;
+  z-index: 5;
+  background: radial-gradient(circle at 35% 25%, #e9d7ae, #b18b59 65%, #604126);
+  border: 2px solid #d0ad77;
+  box-shadow:
+    0 5px 14px rgba(0, 0, 0, 0.65),
+    0 0 20px rgba(231, 190, 126, 0.18),
+    inset 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+/* Enlarged transparent viewing window */
+.planchette-window {
+  position: absolute;
+  width: 62%;
+  height: 62%;
+  top: 15%;
+  left: 19%;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(81, 52, 28, 0.55);
+  box-shadow:
+    inset 0 0 5px rgba(255, 255, 255, 0.15),
+    0 0 3px rgba(255, 255, 255, 0.15);
+}
+
+/* Larger, more prominent pointer */
+.planchette-tip {
+  top: 84%;
+  border-left-width: 13px;
+  border-right-width: 13px;
+  border-top-width: 25px;
+}
+
+/* Atmospheric glow on the active letter */
+.letter.active {
+  position: absolute;
+}

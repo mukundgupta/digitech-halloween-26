@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Ouija Board</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <canvas id="ambience"></canvas>
+    <main class="scene">
+      <div class="board" id="board">
+        <header class="board-header">
+          <div class="ornament">☾</div>
+          <!-- <div class="title">THE MYSTERIES</div>
+          <div class="subtitle">ARE NEVER FAR AWAY</div> -->
+          <div class="ornament">☼</div>
+        </header>
+
+        <section class="special-answers">
+          <span class="board-symbol" data-letter="YES">YES</span>
+          <span class="board-symbol" data-letter="NO">NO</span>
+        </section>
+
+        <section class="alphabet" id="alphabet">
+          <div class="letter-row">
+            <span class="letter">A</span><span class="letter">B</span>
+            <span class="letter">C</span><span class="letter">D</span>
+            <span class="letter">E</span><span class="letter">F</span>
+            <span class="letter">G</span><span class="letter">H</span>
+            <span class="letter">I</span><span class="letter">J</span>
+            <span class="letter">K</span><span class="letter">L</span>
+            <span class="letter">M</span>
+          </div>
+          <div class="letter-row">
+            <span class="letter">N</span><span class="letter">O</span>
+            <span class="letter">P</span><span class="letter">Q</span>
+            <span class="letter">R</span><span class="letter">S</span>
+            <span class="letter">T</span><span class="letter">U</span>
+            <span class="letter">V</span><span class="letter">W</span>
+            <span class="letter">X</span><span class="letter">Y</span>
+            <span class="letter">Z</span>
+          </div>
+        </section>
+
+        <div class="numbers">
+          <span>1</span><span>2</span><span>3</span> <span>4</span><span>5</span
+          ><span>6</span> <span>7</span><span>8</span><span>9</span>
+          <span>0</span>
+        </div>
+
+        <footer class="board-footer">
+          <span class="board-symbol" data-letter="GOODBYE">GOODBYE</span>
+        </footer>
+
+        <div class="planchette" id="planchette">
+          <div class="planchette-window"></div>
+          <div class="planchette-tip"></div>
+        </div>
+      </div>
+
+      <div class="response-area">
+        <div class="status" id="status">THE BOARD IS WAITING</div>
+        <div class="response" id="response"></div>
+      </div>
+
+      <div class="controls">
+        <button id="micButton">ENABLE MICROPHONE</button>
+        <button id="testButton">TEST RESPONSE</button>
+      </div>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
