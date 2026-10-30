@@ -55,15 +55,25 @@ function findBoardElement(character) {
         .find(el => el.dataset.letter === character) || null;
 }
 
-// Move the planchette to an element on the board
+// Move the planchette to an element on the board.
+// Uses layout offsets (not getBoundingClientRect) so the position is
+// independent of any CSS transform applied to an ancestor. This keeps
+// the planchette aligned even when the whole view is warped for the
+// projector by warp.js.
 function moveToElement(element) {
     if (!element) return;
 
-    const boardRect = board.getBoundingClientRect();
-    const elementRect = element.getBoundingClientRect();
+    // Offset of the element's center relative to the board, walking up
+    // the offsetParent chain until we reach the board.
+    let x = element.offsetWidth / 2;
+    let y = element.offsetHeight / 2;
 
-    const x = elementRect.left + elementRect.width / 2 - boardRect.left;
-    const y = elementRect.top + elementRect.height / 2 - boardRect.top;
+    let node = element;
+    while (node && node !== board) {
+        x += node.offsetLeft;
+        y += node.offsetTop;
+        node = node.offsetParent;
+    }
 
     planchette.style.left = `${x}px`;
     planchette.style.top = `${y}px`;
