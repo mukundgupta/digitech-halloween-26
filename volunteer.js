@@ -118,8 +118,13 @@ onValue(sessionRef, (snapshot) => {
         return;
     }
 
-    if (session.status === "asking" && answeredForId !== session.id) {
-        // New question to answer.
+    if (session.status === "speaking") {
+        // The visitor is asking their question aloud. No answer box yet -
+        // it appears only once they finish speaking (status "asking").
+        hideAnswerBox("A VISITOR IS SPEAKING THEIR QUESTION...");
+        activeSessionId = null;
+    } else if (session.status === "asking" && answeredForId !== session.id) {
+        // Visitor finished speaking: now the volunteer can answer.
         activeSessionId = session.id;
         showAnswerBox();
     } else if (session.status === "answered") {

@@ -67,15 +67,17 @@ mainButton.addEventListener("click", () => {
     }
 });
 
-// Step 1: create a fresh session so the board starts listening and
-// the volunteer can begin preparing the answer.
+// Step 1: create a fresh session in the "speaking" state. The visitor
+// is now asking their question aloud. The board does NOT start its
+// answer countdown yet, and the volunteer sees only that a question is
+// being asked (no answer box until the visitor finishes).
 function startSummon() {
     mySessionId = makeSessionId();
     revealedForId = null;
 
     set(sessionRef, {
         id: mySessionId,
-        status: "asking",
+        status: "speaking",
         answer: "",
         source: "",
     }).catch((err) => {
@@ -88,12 +90,23 @@ function startSummon() {
     status.textContent = "SPEAK YOUR QUESTION, THEN FINISH";
 }
 
-// Step 2: the visitor is done asking. Move to the waiting / reveal
-// screen; the answer arrives via Firebase and is revealed.
+// Step 2: the visitor is done asking. Flip the session to "asking",
+// which lets the volunteer answer and starts the board's countdown.
+// Then move to the waiting / reveal screen.
 function finishSpeaking() {
     phase = "summon";
     mainButton.innerHTML = "SUMMON<br />THE SPIRIT";
     waitingToReveal = true;
+
+    // Only advance the session if it is still ours and still "speaking".
+    set(sessionRef, {
+        id: mySessionId,
+        status: "asking",
+        answer: "",
+        source: "",
+    }).catch((err) => {
+        console.error("[Visitor] Failed to finish speaking:", err);
+    });
 
     showScreen("reveal");
     revealStatus.textContent = "The board is listening...";

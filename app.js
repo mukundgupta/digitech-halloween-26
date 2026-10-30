@@ -527,12 +527,19 @@ onValue(sessionRef, (snapshot) => {
     const session = snapshot.val();
     if (!session) return;
 
-    if (session.status === "asking" && handlingSessionId !== session.id) {
-        // A new question just started.
+    if (session.status === "speaking") {
+        // The visitor is still asking their question aloud. The board
+        // listens but does NOT start its answer countdown yet.
+        if (handlingSessionId !== session.id) {
+            clearTimers();
+            handlingSessionId = null;
+        }
+        statusText.textContent = "THE SPIRIT IS LISTENING...";
+    } else if (session.status === "asking" && handlingSessionId !== session.id) {
+        // The visitor has finished asking. Now the board starts timing
+        // and waits for the spirit (volunteer or fallback) to respond.
         handlingSessionId = session.id;
         lastAnsweredId = null;
-        // The visitor has finished asking. The board is no longer
-        // "listening" - it now waits for the spirit to respond.
         statusText.textContent = "THE SPIRIT IS STIRRING";
         startTiming();
     } else if (session.status === "answered" && lastAnsweredId !== session.id) {
