@@ -1,8 +1,10 @@
 // =========================================================
 //  VISITOR PAGE
-//  - Two buttons: SUMMON THE SPIRIT / I HAVE FINISHED
-//  - On "Finished": create a new session (status "asking")
-//  - Then listen for the answer and reveal it letter by letter
+//  One main button that cycles:
+//    SUMMON THE SPIRIT  -> (click) ->  FINISH SPEAKING
+//    FINISH SPEAKING    -> (click) ->  reveal the answer
+//  During the reveal a small "SUMMON AGAIN" button is shown.
+//  After ~7s it is replaced by the full-size SUMMON button.
 //  No authentication, minimal logic.
 // =========================================================
 
@@ -16,8 +18,8 @@ import {
 const askScreen = document.getElementById("askScreen");
 const revealScreen = document.getElementById("revealScreen");
 
-const summonButton = document.getElementById("summonButton");
-const finishedButton = document.getElementById("finishedButton");
+const mainButton = document.getElementById("mainButton");
+const smallButton = document.getElementById("smallButton");
 const status = document.getElementById("status");
 
 const revealStatus = document.getElementById("revealStatus");
@@ -29,6 +31,16 @@ const sessionRef = ref(db, "session");
 let mySessionId = null;
 // Guard so we only reveal the answer once per session.
 let revealedForId = null;
+// Current state of the main button: "summon" or "finish".
+let phase = "summon";
+// True once the visitor pressed FINISH SPEAKING and is on the reveal
+// screen. We only reveal the answer after this, so an answer that
+// arrives while they are still speaking waits for them.
+let waitingToReveal = false;
+// If the answer lands before the visitor finishes, stash it here.
+let pendingAnswer = null;
+// Timer that swaps the small button back to the full one.
+let swapButtonTimer = null;
 
 // Simple unique id for each interaction.
 function makeSessionId() {
@@ -45,27 +57,22 @@ function sleep(ms) {
 }
 
 // ---------------------------------------------------------
-//  Button 1: SUMMON — just arms the "Finished" button.
-//  (No Firebase write needed; the spirit is "summoned"
-//  locally so the visitor has a clear two-step ritual.)
+//  MAIN BUTTON: toggles between summoning and finishing.
 // ---------------------------------------------------------
-summonButton.addEventListener("click", () => {
-    finishedButton.disabled = false;
-    summonButton.disabled = true;
-    status.textContent = "SPEAK YOUR QUESTION...";
+mainButton.addEventListener("click", () => {
+    if (phase === "summon") {
+        startSummon();
+    } else if (phase === "finish") {
+        finishSpeaking();
+    }
 });
 
-// ---------------------------------------------------------
-//  Button 2: FINISHED — create a new session in Firebase.
-// ---------------------------------------------------------
-finishedButton.addEventListener("click", () => {
-    if (finishedButton.disabled) return;
-
+// Step 1: create a fresh session so the board starts listening and
+// the volunteer can begin preparing the answer.
+function startSummon() {
     mySessionId = makeSessionId();
     revealedForId = null;
 
-    // Create a fresh session. This replaces any previous one,
-    // which also clears a stale answer/source from last time.
     set(sessionRef, {
         id: mySessionId,
         status: "asking",
@@ -76,10 +83,54 @@ finishedButton.addEventListener("click", () => {
         status.textContent = "CONNECTION ERROR - TRY AGAIN";
     });
 
-    // Move to the waiting / reveal screen.
+    phase = "finish";
+    mainButton.innerHTML = "FINISH<br />SPEAKING";
+    status.textContent = "SPEAK YOUR QUESTION, THEN FINISH";
+}
+
+// Step 2: the visitor is done asking. Move to the waiting / reveal
+// screen; the answer arrives via Firebase and is revealed.
+function finishSpeaking() {
+    phase = "summon";
+    mainButton.innerHTML = "SUMMON<br />THE SPIRIT";
+    waitingToReveal = true;
+
     showScreen("reveal");
     revealStatus.textContent = "The board is listening...";
     revealText.textContent = "";
+    // Small "summon again" button is available right away while waiting.
+    clearTimeout(swapButtonTimer);
+    smallButton.style.display = "inline-block";
+
+    // If the spirit already answered while the visitor was speaking,
+    // reveal it now.
+    if (pendingAnswer !== null) {
+        const answer = pendingAnswer;
+        pendingAnswer = null;
+        revealAnswer(answer);
+    }
+}
+
+// ---------------------------------------------------------
+//  Once the full answer is shown, keep it on screen with the
+//  small "summon again" button for ~7s, then return to the
+//  full-size SUMMON button.
+// ---------------------------------------------------------
+function holdThenSwapToFullButton() {
+    clearTimeout(swapButtonTimer);
+    smallButton.style.display = "inline-block";
+
+    swapButtonTimer = setTimeout(() => {
+        // Return to the full idle screen with the big SUMMON button.
+        resetToIdle();
+    }, 7000);
+}
+
+// The small button restarts the ritual immediately.
+smallButton.addEventListener("click", () => {
+    clearTimeout(swapButtonTimer);
+    resetToIdle();
+    startSummon();
 });
 
 // ---------------------------------------------------------
@@ -94,14 +145,22 @@ onValue(sessionRef, (snapshot) => {
 
     if (session.status === "answered" && revealedForId !== session.id) {
         revealedForId = session.id; // reveal exactly once
-        revealAnswer(session.answer || "");
+        const answer = session.answer || "";
+
+        if (waitingToReveal) {
+            // Visitor has finished speaking and is watching: reveal now.
+            revealAnswer(answer);
+        } else {
+            // Answer arrived while the visitor is still speaking. Hold it
+            // until they press FINISH SPEAKING.
+            pendingAnswer = answer;
+        }
     }
 });
 
 // ---------------------------------------------------------
 //  Reveal the answer one character at a time on the phone.
-//  (Adapted cadence from the board's spellResponse: ~650ms
-//  per letter, ~350ms per space. No planchette here.)
+//  (~650ms per letter, ~350ms per space. No planchette here.)
 // ---------------------------------------------------------
 async function revealAnswer(answer) {
     revealStatus.textContent = "THE SPIRIT ANSWERS";
@@ -114,20 +173,24 @@ async function revealAnswer(answer) {
         await sleep(character === " " ? 350 : 650);
     }
 
-    // Hold the full answer briefly so it can be read.
-    await sleep(3500);
-
-    // Return to the idle screen, ready for the next visitor.
-    resetToIdle();
+    // Full answer is now shown: hold ~7s, then swap back to the big button.
+    holdThenSwapToFullButton();
 }
 
 function resetToIdle() {
+    clearTimeout(swapButtonTimer);
     mySessionId = null;
+    phase = "summon";
+    waitingToReveal = false;
+    pendingAnswer = null;
+    mainButton.innerHTML = "SUMMON<br />THE SPIRIT";
+    smallButton.style.display = "none";
     showScreen("ask");
     status.textContent = "READY";
-    summonButton.disabled = false;
-    finishedButton.disabled = true;
 }
+
+// Start on the idle screen with the small button hidden.
+resetToIdle();
 
 // ---------------------------------------------------------
 //  Connection status (nice-to-have feedback on idle screen).

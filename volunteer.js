@@ -26,6 +26,10 @@ const presenceButton = document.getElementById("presenceButton");
 const sessionRef = ref(db, "session");
 const onlineRef = ref(db, "volunteerOnline");
 const typingRef = ref(db, "typing");
+// A monotonically increasing timestamp written on every keystroke.
+// Because the value changes each time, the board's onValue listener
+// fires on every keystroke and can keep resetting its fallback timer.
+const typingPulseRef = ref(db, "typingPulse");
 const connectedRef = ref(db, ".info/connected");
 
 // The session id we are currently allowed to answer.
@@ -93,11 +97,15 @@ let typingClearTimer = null;
 
 answerInput.addEventListener("input", () => {
     set(typingRef, true);
+    // Changing value on every keystroke -> board listener fires every
+    // time and resets its inactivity timer. Without this, a sustained
+    // "typing === true" never re-fires and the spirit cuts in mid-answer.
+    set(typingPulseRef, Date.now());
 
     clearTimeout(typingClearTimer);
     typingClearTimer = setTimeout(() => {
         set(typingRef, false);
-    }, 1000); // "stopped typing" after 1s of no keystrokes
+    }, 1500); // "stopped typing" after 1.5s of no keystrokes
 });
 
 // ---------------------------------------------------------

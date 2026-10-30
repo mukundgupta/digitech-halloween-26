@@ -410,6 +410,8 @@ animateParticles();
 const sessionRef = ref(db, "session");
 const onlineRef = ref(db, "volunteerOnline");
 const typingRef = ref(db, "typing");
+// Heartbeat timestamp the volunteer writes on every keystroke.
+const typingPulseRef = ref(db, "typingPulse");
 const connectedRef = ref(db, ".info/connected");
 
 // Connection status (also covered the Stage 1 check).
@@ -467,26 +469,32 @@ async function triggerFallback() {
     }
 }
 
-// Reset the 4s inactivity timer (called on each typing signal).
+// How long the board waits with no typing activity before the
+// spirit answers on its own (volunteer online). Each typing signal
+// resets this, so a volunteer who keeps typing is never cut off.
+const INACTIVITY_MS = 8000;
+
+// Reset the inactivity timer (called on each typing signal).
 function armInactivityTimer() {
     clearTimeout(inactivityTimer);
-    inactivityTimer = setTimeout(triggerFallback, 4000);
+    inactivityTimer = setTimeout(triggerFallback, INACTIVITY_MS);
 }
 
 // Start the timing logic for a newly-asked question.
 function startTiming() {
     clearTimers();
 
-    // Absolute maximum: 15 seconds from the visitor pressing Finished.
-    // This is never extended, whatever typing does.
-    hardDeadlineTimer = setTimeout(triggerFallback, 15000);
+    // Absolute maximum from the visitor pressing Finished. Even with
+    // continuous typing, the spirit answers by this point.
+    hardDeadlineTimer = setTimeout(triggerFallback, 30000);
 
     if (!volunteerOnline) {
-        // Scenario C: no volunteer connected -> random 1-5s fallback.
-        const delay = 1000 + Math.floor(Math.random() * 4000);
+        // Scenario C: no volunteer connected -> random 3-6s fallback,
+        // so the spirit feels deliberate rather than instant.
+        const delay = 3000 + Math.floor(Math.random() * 3000);
         inactivityTimer = setTimeout(triggerFallback, delay);
     } else {
-        // Scenario A/B: volunteer online. Wait 4s; typing resets this.
+        // Scenario A/B: volunteer online. Wait INACTIVITY_MS; typing resets this.
         armInactivityTimer();
     }
 }
@@ -497,6 +505,17 @@ function startTiming() {
 onValue(typingRef, (snapshot) => {
     if (!handlingSessionId) return;
     if (snapshot.val() === true && volunteerOnline) {
+        armInactivityTimer();
+    }
+});
+
+// The typing heartbeat changes on EVERY keystroke, so this fires
+// continuously while the volunteer types and keeps the fallback at bay.
+// (The boolean typingRef above only fires on the rising edge, which is
+// why a sustained answer used to get interrupted.)
+onValue(typingPulseRef, () => {
+    if (!handlingSessionId) return;
+    if (volunteerOnline) {
         armInactivityTimer();
     }
 });
@@ -522,33 +541,20 @@ onValue(sessionRef, (snapshot) => {
         handlingSessionId = null;
         clearTimers();
 
-        statusText.textContent = "THE SPIRIT HAS SPOKEN";
-
-        // The visitor's phone reveals the answer. The board waits
-        // roughly as long as that reveal lasts, then returns to idle.
+        // Spell the answer on the physical board with the planchette,
+        // in sync with the phone's letter-by-letter reveal. When the
+        // animation finishes it returns the session to idle.
         const answer = session.answer || "";
-        const revealMs = estimateRevealTime(answer);
+        const sessionId = session.id;
 
-        setTimeout(() => {
-            statusText.textContent = "THE BOARD IS WAITING";
+        spellResponse(answer).then(() => {
             // Return the shared session to idle for the next visitor.
             set(sessionRef, {
-                id: session.id,
+                id: sessionId,
                 status: "idle",
                 answer: "",
                 source: "",
             }).catch((err) => console.error("[Board] Reset failed:", err));
-        }, revealMs);
+        });
     }
 });
-
-// Estimate how long the phone's letter-by-letter reveal takes,
-// so the board's status returns to idle at about the same time.
-// Mirrors trigger.js cadence: 650ms/letter, 350ms/space, +3.5s hold.
-function estimateRevealTime(answer) {
-    let ms = 3500; // trailing hold
-    for (const ch of answer) {
-        ms += ch === " " ? 350 : 650;
-    }
-    return ms + 500; // small buffer
-}

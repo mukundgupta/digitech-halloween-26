@@ -38,7 +38,8 @@
         line-height: 1.7;
       }
 
-      button {
+      /* The one main action button (big circular). */
+      #mainButton {
         display: block;
         width: min(75vw, 280px);
         aspect-ratio: 1;
@@ -51,15 +52,36 @@
         letter-spacing: 2px;
         box-shadow: 0 0 35px #9a6b3830;
         margin: 25px auto;
+        transition: opacity 0.3s;
       }
 
-      button:active {
+      #mainButton:active {
         transform: scale(0.96);
         background: #80603b;
       }
 
-      button:disabled {
+      #mainButton:disabled {
         opacity: 0.4;
+      }
+
+      /* Small "summon again" button shown during the reveal. */
+      #smallButton {
+        display: none;
+        width: auto;
+        padding: 12px 22px;
+        border-radius: 24px;
+        border: 1px solid #8a6b45;
+        background: #251910;
+        color: #d7b77e;
+        font-family: Georgia, serif;
+        font-size: 13px;
+        letter-spacing: 2px;
+        margin: 20px auto 0;
+        cursor: pointer;
+      }
+
+      #smallButton:active {
+        transform: scale(0.96);
       }
 
       #status {
@@ -76,7 +98,6 @@
         display: block;
       }
 
-      /* Answer reveal (used in Stage 5) */
       #revealText {
         margin-top: 40px;
         font-size: 30px;
@@ -91,17 +112,16 @@
 
   <body>
     <main>
-      <!-- Screen 1: idle / ask -->
+      <!-- Screen 1: ask (summon / finish speaking) -->
       <section id="askScreen" class="screen active">
         <h1>THE BOARD IS WAITING</h1>
 
         <p>
           Press to summon the spirit, speak your question aloud,<br />
-          then press "I HAVE FINISHED".
+          then press "FINISH SPEAKING".
         </p>
 
-        <button id="summonButton">SUMMON<br />THE SPIRIT</button>
-        <button id="finishedButton" disabled>I HAVE<br />FINISHED</button>
+        <button id="mainButton">SUMMON<br />THE SPIRIT</button>
 
         <div id="status">READY</div>
       </section>
@@ -111,6 +131,9 @@
         <h1>THE SPIRIT STIRS</h1>
         <p id="revealStatus">The board is listening...</p>
         <div id="revealText"></div>
+
+        <!-- Small "summon again" button, swapped for the big one after ~7s -->
+        <button id="smallButton">SUMMON AGAIN</button>
       </section>
     </main>
 
