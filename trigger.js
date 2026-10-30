@@ -22,7 +22,6 @@ const mainButton = document.getElementById("mainButton");
 const smallButton = document.getElementById("smallButton");
 const status = document.getElementById("status");
 
-const revealStatus = document.getElementById("revealStatus");
 const revealText = document.getElementById("revealText");
 
 const sessionRef = ref(db, "session");
@@ -109,7 +108,6 @@ function finishSpeaking() {
     });
 
     showScreen("reveal");
-    revealStatus.textContent = "The board is listening...";
     revealText.textContent = "";
     // Small "summon again" button is available right away while waiting.
     clearTimeout(swapButtonTimer);
@@ -176,7 +174,6 @@ onValue(sessionRef, (snapshot) => {
 //  (~650ms per letter, ~350ms per space. No planchette here.)
 // ---------------------------------------------------------
 async function revealAnswer(answer) {
-    revealStatus.textContent = "THE SPIRIT ANSWERS";
     revealText.textContent = "";
 
     const characters = answer.split("");

@@ -1,275 +1,447 @@
-@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap");
+/* =========================================================
+   THE ANCIENT TALKING BOARD
+   Fonts:
+     - IM Fell English        -> aged printed letters / numbers
+     - Cinzel Decorative      -> carved title + symbols
+     - Cormorant Garamond     -> spoken response text
+========================================================= */
+@import url("https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=IM+Fell+English:ital@0;1&display=swap");
 
 * {
   box-sizing: border-box;
+}
+
+:root {
+  --ink: #2a1a0e;
+  --ink-soft: #3d2817;
+  --gold: #e8c58f;
+  --gold-bright: #ffe3ac;
+  --ember: #ff9e3d;
+  --wood-dark: #1d120a;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   background: radial-gradient(
-    ellipse at center,
-    #25201c 0%,
-    #100e0d 55%,
-    #050505 100%
+    ellipse at 50% 40%,
+    #241812 0%,
+    #130c08 52%,
+    #040302 100%
   );
-  color: #e5d2a6;
-  /* font-family: "Cormorant Garamond", serif; */
+  color: var(--gold);
+  font-family: "Cormorant Garamond", serif;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  position: relative;
+  isolation: isolate;
 }
 
 .scene {
   width: min(94vw, 1200px);
   text-align: center;
+  position: relative;
+  z-index: 2;
 }
 
+/* =========================================================
+   THE BOARD — aged, weathered wood
+========================================================= */
 .board {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border: 3px solid #80633e;
-  border-radius: 12px;
-  background:
-    radial-gradient(
-      ellipse at center,
-      rgba(120, 79, 43, 0.18),
-      transparent 75%
-    ),
-    repeating-linear-gradient(
-      2deg,
-      rgba(30, 15, 8, 0.12) 0px,
-      rgba(30, 15, 8, 0.12) 2px,
-      transparent 3px,
-      transparent 8px
-    ),
-    linear-gradient(135deg, #50341f, #281a13 55%, #412b1b);
-  box-shadow:
-    0 0 40px rgba(0, 0, 0, 0.8),
-    inset 0 0 35px rgba(0, 0, 0, 0.7);
+  border-radius: 14px;
   padding: 2% 4%;
+  color: var(--ink);
+
+  /* Layered wood: grain streaks, burn/stain blotches, base planks */
+  background:
+    /* worn dark vignette into the edges */
+    radial-gradient(
+      ellipse at 50% 45%,
+      transparent 40%,
+      rgba(20, 10, 4, 0.55) 100%
+    ),
+    /* aged stains */
+    radial-gradient(
+      ellipse at 22% 30%,
+      rgba(60, 35, 15, 0.5),
+      transparent 38%
+    ),
+    radial-gradient(
+      ellipse at 78% 68%,
+      rgba(30, 16, 6, 0.55),
+      transparent 42%
+    ),
+    radial-gradient(
+      ellipse at 60% 20%,
+      rgba(90, 60, 30, 0.25),
+      transparent 30%
+    ),
+    /* fine grain lines */
+    repeating-linear-gradient(
+      1.5deg,
+      rgba(20, 10, 4, 0.18) 0px,
+      rgba(20, 10, 4, 0.18) 1px,
+      transparent 2px,
+      transparent 6px
+    ),
+    /* broad plank shading */
+    repeating-linear-gradient(
+      92deg,
+      rgba(0, 0, 0, 0.06) 0px,
+      rgba(0, 0, 0, 0.06) 2px,
+      transparent 2px,
+      transparent 120px
+    ),
+    linear-gradient(115deg, #6b4a2b 0%, #4a3019 45%, #593a20 70%, #3a2512 100%);
+  box-shadow:
+    0 0 60px rgba(0, 0, 0, 0.85),
+    inset 0 0 70px rgba(20, 10, 2, 0.75),
+    inset 0 2px 1px rgba(255, 220, 160, 0.08);
+  animation: boardFlicker 7s infinite;
+  transform-origin: center;
+  z-index: 1;
 }
 
+/* Carved double border */
 .board::before {
   content: "";
   position: absolute;
-  inset: 12px;
-  border: 1px solid rgba(210, 177, 119, 0.55);
-  border-radius: 5px;
+  inset: 14px;
+  border: 1px solid rgba(232, 197, 143, 0.45);
+  border-radius: 7px;
+  box-shadow:
+    inset 0 0 0 3px rgba(20, 10, 4, 0.4),
+    inset 0 0 0 4px rgba(232, 197, 143, 0.18);
   pointer-events: none;
+  z-index: 3;
 }
 
+/* Soft parchment-light glow over the center */
+.board::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 42%,
+    rgba(255, 210, 140, 0.1),
+    transparent 55%
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Everything drawn on the board sits above the stains */
+.board-header,
+.special-answers,
+.alphabet,
+.numbers,
+.board-footer,
+.planchette {
+  position: relative;
+  z-index: 4;
+}
+
+/* =========================================================
+   HEADER / TITLE
+========================================================= */
 .board-header {
-  height: 22%;
+  height: 20%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: clamp(14px, 3vw, 40px);
 }
 
 .title {
-  font-family: "Cinzel", serif;
-  font-size: clamp(16px, 2.5vw, 30px);
-  letter-spacing: 0.3em;
-}
-
-.subtitle {
-  font-size: clamp(9px, 1vw, 13px);
-  letter-spacing: 0.25em;
-  opacity: 0.7;
+  font-family: "Cinzel Decorative", serif;
+  font-weight: 900;
+  font-size: clamp(24px, 5vw, 58px);
+  letter-spacing: clamp(4px, 1.2vw, 16px);
+  color: #e9cc96;
+  text-shadow:
+    0 1px 0 rgba(20, 10, 4, 0.9),
+    0 0 18px rgba(255, 190, 110, 0.25);
+  /* engraved look */
+  background: linear-gradient(180deg, #f2d7a2, #9c7239 55%, #6b4a24);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .ornament {
-  font-size: clamp(20px, 3vw, 34px);
+  font-family: "Cinzel Decorative", serif;
+  font-size: clamp(22px, 4vw, 46px);
   line-height: 1;
-  color: #d6b77b;
+  color: #d9b67d;
+  text-shadow:
+    0 1px 0 rgba(20, 10, 4, 0.8),
+    0 0 12px rgba(255, 180, 90, 0.3);
 }
 
+/* =========================================================
+   YES / NO
+========================================================= */
 .special-answers {
-  height: 10%;
+  height: 11%;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
+  padding: 0 6%;
 }
 
 .board-symbol {
-  font-family: "Cinzel", serif;
-  font-size: clamp(13px, 2vw, 24px);
-  letter-spacing: 0.2em;
+  font-family: "Cinzel Decorative", serif;
+  font-weight: 700;
+  font-size: clamp(13px, 2vw, 26px);
+  letter-spacing: 0.25em;
+  color: #dcbd84;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  text-shadow:
+    0 1px 0 rgba(20, 10, 4, 0.8),
+    0 0 10px rgba(255, 180, 90, 0.2);
 }
 
+.board-symbol .glyph {
+  font-size: 1.15em;
+  opacity: 0.85;
+}
+
+.goodbye {
+  letter-spacing: 0.35em;
+}
+
+/* =========================================================
+   CURVED ALPHABET — aged printed ink
+========================================================= */
 .alphabet {
-  height: 27%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 12%;
+  position: relative;
+  display: block;
+  height: 28%;
 }
 
 .letter-row {
-  display: grid;
-  grid-template-columns: repeat(13, 1fr);
-  align-items: center;
+  display: contents;
 }
 
 .letter {
-  /* font-family: "Cinzel", serif; */
-  font-size: clamp(14px, 2.2vw, 27px);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  z-index: 1;
+  cursor: default;
+
+  font-family: "IM Fell English", serif;
+  font-size: clamp(16px, 2.6vw, 32px);
   color: #e6d2a9;
+  text-shadow:
+    0 1px 0 rgba(20, 10, 4, 0.7),
+    0 0 1px rgba(20, 10, 4, 0.9);
+  /* faded-ink unevenness */
+  opacity: 0.92;
   transition:
-    color 0.2s,
-    text-shadow 0.2s;
+    color 0.25s ease,
+    text-shadow 0.3s ease,
+    transform 0.3s ease;
 }
 
 .letter.active {
-  color: #fff1bf;
+  color: #fff3ce;
+  transform: translate(-50%, -50%) scale(1.28);
   text-shadow:
-    0 0 12px #ffcf77,
-    0 0 25px #ffae42;
+    0 0 10px #ffdc9c,
+    0 0 22px #ffbd62,
+    0 0 40px #d68a36,
+    0 0 70px #b5661c;
+  animation: letterPulse 0.65s ease;
 }
 
+@keyframes letterPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(1.42);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.28);
+  }
+}
+
+/* =========================================================
+   NUMBERS
+========================================================= */
 .numbers {
   height: 12%;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 4%;
-  font-family: "Cinzel", serif;
-  font-size: clamp(12px, 1.7vw, 20px);
-  opacity: 0.75;
+  gap: 3.5%;
+  font-family: "IM Fell English", serif;
+  font-size: clamp(13px, 1.9vw, 24px);
+  color: #d8c196;
+  opacity: 0.8;
+  text-shadow: 0 1px 0 rgba(20, 10, 4, 0.7);
 }
 
+/* =========================================================
+   GOODBYE FOOTER
+========================================================= */
 .board-footer {
-  height: 12%;
+  height: 11%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+/* =========================================================
+   THE PLANCHETTE — heavy, drifting, glowing lens
+========================================================= */
 .planchette {
   position: absolute;
-  z-index: 5;
   left: 50%;
   top: 50%;
-  width: clamp(35px, 5vw, 58px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #e9d7ae, #9a774c 70%, #47301d);
-  border: 2px solid #c9a66c;
+  width: clamp(72px, 8vw, 104px);
+  aspect-ratio: 1 / 1.08;
+  z-index: 5;
+
+  /* heart/teardrop wooden body */
+  border-radius: 50% 50% 46% 46%;
+  background: radial-gradient(
+    circle at 38% 28%,
+    #efdcb4 0%,
+    #c49a63 42%,
+    #8a6334 72%,
+    #4a3018 100%
+  );
+  border: 2px solid rgba(210, 173, 119, 0.85);
   box-shadow:
-    0 4px 12px #0009,
-    0 0 18px #f1c98244;
+    0 10px 22px rgba(0, 0, 0, 0.7),
+    0 0 28px rgba(231, 190, 126, 0.22),
+    inset 0 0 14px rgba(255, 240, 210, 0.25),
+    inset 0 -6px 12px rgba(40, 24, 10, 0.5);
+
+  /* Punch a real see-through hole where the viewing window sits,
+     so the letter beneath the planchette shows through the opening.
+     Hole centred at 50% x / 43% y, radius ~24%. */
+  -webkit-mask: radial-gradient(
+    circle at 50% 43%,
+    transparent 0 23%,
+    #000 24.5%
+  );
+  mask: radial-gradient(circle at 50% 43%, transparent 0 23%, #000 24.5%);
+
+  /* center the piece, then let the idle drift animate on top */
   transform: translate(-50%, -50%);
   transition:
-    left 0.55s ease-in-out,
-    top 0.55s ease-in-out;
+    left 0.6s cubic-bezier(0.45, 0.05, 0.3, 1),
+    top 0.6s cubic-bezier(0.45, 0.05, 0.3, 1);
+  animation: planchetteDrift 6s ease-in-out infinite;
   pointer-events: none;
 }
 
+/* The beveled rim around the see-through hole. The center is fully
+   transparent (the body is actually cut away by the mask above), so
+   the board letter shows through. This element only draws the lip. */
 .planchette-window {
   position: absolute;
-  width: 30%;
-  height: 30%;
+  width: 48%;
+  height: 48%;
+  top: 19%;
+  left: 26%;
   border-radius: 50%;
-  background: #382419;
-  top: 25%;
-  left: 35%;
-  box-shadow: inset 0 0 5px #000;
+  background: transparent;
+  /* carved lip: a light top edge and dark inner shadow give depth */
+  border: 2px solid rgba(70, 46, 24, 0.85);
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.6),
+    inset 0 -2px 3px rgba(255, 240, 210, 0.35),
+    0 0 4px rgba(255, 220, 160, 0.3);
+  pointer-events: none;
 }
 
+/* Pointer tip */
 .planchette-tip {
   position: absolute;
   left: 50%;
-  top: 85%;
+  top: 92%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
-  border-top: 27px solid #a47d4d;
+  border-left: 11px solid transparent;
+  border-right: 11px solid transparent;
+  border-top: 22px solid #9a734579;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
 }
 
+/* While the board is actively spelling, the lens glows */
+.planchette.moving {
+  animation: planchetteDrift 6s ease-in-out infinite;
+}
+
+.planchette.moving .planchette-window {
+  box-shadow:
+    inset 0 0 12px rgba(0, 0, 0, 0.4),
+    0 0 14px rgba(255, 200, 120, 0.6),
+    0 0 30px rgba(255, 170, 80, 0.4);
+  border-color: rgba(255, 210, 150, 0.6);
+}
+
+/* Gentle idle float so it never looks frozen */
+@keyframes planchetteDrift {
+  0% {
+    transform: translate(-50%, -50%) rotate(-0.6deg);
+  }
+  50% {
+    transform: translate(-50%, -52%) rotate(0.6deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(-0.6deg);
+  }
+}
+
+/* =========================================================
+   RESPONSE AREA — the spirit's voice
+========================================================= */
 .response-area {
-  margin-top: 24px;
-  min-height: 65px;
+  margin-top: 28px;
+  min-height: 80px;
 }
 
 .status {
-  font-family: "Cinzel", serif;
-  font-size: 12px;
-  letter-spacing: 0.25em;
-  color: #a98d62;
+  font-family: "Cinzel Decorative", serif;
+  font-size: clamp(11px, 1.3vw, 15px);
+  letter-spacing: 0.35em;
+  color: #b9975f;
+  text-transform: uppercase;
+  opacity: 0.9;
 }
 
 .response {
-  margin-top: 8px;
-  font-family: "Cinzel", serif;
-  font-size: clamp(18px, 3vw, 30px);
-  letter-spacing: 0.18em;
-  color: #f0d9a8;
-  text-shadow: 0 0 15px #c48e45;
+  margin-top: 14px;
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 600;
+  font-style: italic;
+  font-size: clamp(22px, 4vw, 44px);
+  letter-spacing: 0.14em;
+  color: #f5e2b6;
+  text-shadow:
+    0 0 14px rgba(196, 142, 69, 0.7),
+    0 0 36px rgba(255, 160, 70, 0.35);
+  min-height: 1.2em;
 }
 
-.controls {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-button {
-  padding: 12px 20px;
-  color: #e6d2a9;
-  background: #211912;
-  border: 1px solid #80633e;
-  font-family: "Cinzel", serif;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #49321f;
-}
-
-@media (max-width: 650px) {
-  .scene {
-    width: 98vw;
-  }
-
-  .board {
-    padding: 2%;
-  }
-
-  .alphabet {
-    gap: 8%;
-  }
-
-  .letter {
-    font-size: 3vw;
-  }
-}
-
-/* =========================================
-   ATMOSPHERE
-========================================= */
-
-body {
-  position: relative;
-  isolation: isolate;
-  background: radial-gradient(
-    ellipse at 50% 45%,
-    #30221a 0%,
-    #17100d 48%,
-    #050403 100%
-  );
-}
-
-/* Floating light and fog */
+/* =========================================================
+   ATMOSPHERE: fog, grain, flicker
+========================================================= */
 body::before {
   content: "";
   position: fixed;
@@ -279,7 +451,7 @@ body::before {
   background:
     radial-gradient(
       ellipse at 30% 40%,
-      rgba(184, 129, 70, 0.1),
+      rgba(184, 129, 70, 0.12),
       transparent 35%
     ),
     radial-gradient(
@@ -289,21 +461,20 @@ body::before {
     ),
     radial-gradient(
       ellipse at 50% 50%,
-      rgba(255, 205, 133, 0.045),
+      rgba(255, 205, 133, 0.05),
       transparent 55%
     );
-  filter: blur(35px);
+  filter: blur(40px);
   animation: fogDrift 22s ease-in-out infinite alternate;
 }
 
-/* Film grain */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 12;
   pointer-events: none;
-  opacity: 0.12;
+  opacity: 0.1;
   background-image: repeating-radial-gradient(
     circle at 17% 32%,
     transparent 0,
@@ -318,19 +489,16 @@ body::after {
 @keyframes fogDrift {
   0% {
     transform: translate(-5%, 2%) scale(1);
-    opacity: 0.65;
+    opacity: 0.6;
   }
-
   35% {
     transform: translate(3%, -3%) scale(1.08);
     opacity: 1;
   }
-
   70% {
     transform: translate(-2%, 4%) scale(1.04);
     opacity: 0.75;
   }
-
   100% {
     transform: translate(5%, -2%) scale(1.1);
     opacity: 0.9;
@@ -355,90 +523,49 @@ body::after {
   }
 }
 
-/* Board illumination flicker */
-.board {
-  animation: boardFlicker 8s infinite;
-  z-index: 1;
-}
-
-.board {
-  animation: boardFlicker 7s infinite;
-  transform-origin: center;
-}
-
 @keyframes boardFlicker {
   0%,
   100% {
     filter: brightness(1);
   }
-
   8% {
     filter: brightness(0.94);
   }
-
   10% {
-    filter: brightness(1.12);
-  }
-
-  11% {
-    filter: brightness(0.82);
-  }
-
-  13% {
-    filter: brightness(1.05);
-  }
-
-  28% {
-    filter: brightness(0.96);
-  }
-
-  29% {
-    filter: brightness(0.72);
-  }
-
-  30% {
     filter: brightness(1.1);
   }
-
-  31% {
-    filter: brightness(0.95);
+  11% {
+    filter: brightness(0.84);
   }
-
-  55% {
+  13% {
     filter: brightness(1.04);
   }
-
+  29% {
+    filter: brightness(0.74);
+  }
+  30% {
+    filter: brightness(1.09);
+  }
+  31% {
+    filter: brightness(0.96);
+  }
   56% {
-    filter: brightness(0.86);
+    filter: brightness(0.88);
   }
-
   58% {
-    filter: brightness(1.13);
+    filter: brightness(1.12);
   }
-
   59% {
     filter: brightness(1);
   }
-
-  78% {
-    filter: brightness(0.92);
-  }
-
   80% {
-    filter: brightness(1.08);
+    filter: brightness(1.07);
   }
 }
 
-/* Make sure the interface sits above the atmosphere */
-.scene {
-  position: relative;
-  z-index: 2;
-}
-
-/* =========================================
+/* =========================================================
    PARTICLE CANVAS
-========================================= */
-
+========================================================= */
 #ambience {
   position: fixed;
   inset: 0;
@@ -448,79 +575,17 @@ body::after {
   pointer-events: none;
 }
 
-/* =========================================
-   CURVED ALPHABET
-========================================= */
-
-.alphabet {
-  position: relative;
-  display: block;
-  height: 27%;
-}
-
-.letter-row {
-  display: contents;
-}
-
-.letter {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  white-space: nowrap;
-  z-index: 1;
-  transition:
-    color 0.25s,
-    text-shadow 0.25s;
-  cursor: default;
-}
-
-.letter.active {
-  color: #fff3ce;
-  text-shadow:
-    0 0 8px #ffdc9c,
-    0 0 20px #ffbd62,
-    0 0 35px #d68a36;
-}
-
-/* =========================================
-   PLANCHETTE
-========================================= */
-
-.planchette {
-  width: clamp(66px, 7vw, 88px);
-  aspect-ratio: 1;
-  z-index: 5;
-  background: radial-gradient(circle at 35% 25%, #e9d7ae, #b18b59 65%, #604126);
-  border: 2px solid #d0ad77;
-  box-shadow:
-    0 5px 14px rgba(0, 0, 0, 0.65),
-    0 0 20px rgba(231, 190, 126, 0.18),
-    inset 0 0 8px rgba(255, 255, 255, 0.2);
-}
-
-/* Enlarged transparent viewing window */
-.planchette-window {
-  position: absolute;
-  width: 62%;
-  height: 62%;
-  top: 15%;
-  left: 19%;
-  border-radius: 50%;
-  background: transparent;
-  border: 1px solid rgba(81, 52, 28, 0.55);
-  box-shadow:
-    inset 0 0 5px rgba(255, 255, 255, 0.15),
-    0 0 3px rgba(255, 255, 255, 0.15);
-}
-
-/* Larger, more prominent pointer */
-.planchette-tip {
-  top: 84%;
-  border-left-width: 13px;
-  border-right-width: 13px;
-  border-top-width: 25px;
-}
-
-/* Atmospheric glow on the active letter */
-.letter.active {
-  position: absolute;
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+@media (max-width: 650px) {
+  .scene {
+    width: 98vw;
+  }
+  .board {
+    padding: 3% 3%;
+  }
+  .letter {
+    font-size: 3.4vw;
+  }
 }

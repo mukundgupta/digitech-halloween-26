@@ -12,8 +12,6 @@ const board = document.getElementById("board");
 const planchette = document.getElementById("planchette");
 const statusText = document.getElementById("status");
 const responseText = document.getElementById("response");
-const micButton = document.getElementById("micButton");
-const testButton = document.getElementById("testButton");
 
 const responses = [
     "WE HAVE BEEN WAITING",
@@ -38,12 +36,6 @@ const responses = [
 
 let isResponding = false;
 let lastResponse = "";
-let microphoneStream = null;
-let audioContext = null;
-let animationFrame = null;
-let speechStartedAt = null;
-let lastLoudAt = null;
-let triggeredAt = 0;
 
 // Utility: wait for a specified duration
 function sleep(ms) {
@@ -137,6 +129,7 @@ async function spellResponse(response) {
     isResponding = true;
     responseText.textContent = "";
     statusText.textContent = "THE BOARD IS RESPONDING";
+    planchette.classList.add("moving");
 
     const characters = response.split("");
 
@@ -171,132 +164,13 @@ async function spellResponse(response) {
     document.querySelectorAll(".letter.active")
         .forEach(el => el.classList.remove("active"));
 
+    planchette.classList.remove("moving");
     resetPlanchette();
     responseText.textContent = "";
     statusText.textContent = "THE BOARD IS WAITING";
 
     isResponding = false;
-    // socket.emit("board:ready"); // Socket.IO removed; board no longer spells
-    triggeredAt = Date.now();
 }
-
-// Start a complete response
-
-
-async function triggerResponse() {
-    if (isResponding) return;
-
-    if (Date.now() - triggeredAt < 5000) return;
-
-    isResponding = true;
-    triggeredAt = Date.now();
-
-    const response = getRandomResponse();
-
-    statusText.textContent = "THE BOARD IS LISTENING...";
-
-    await sleep(1500);
-
-    await spellResponse(response);
-}
-
-
-
-// Manual test button
-testButton.addEventListener("click", () => {
-    triggerResponse();
-});
-
-// Microphone setup
-async function enableMicrophone() {
-    try {
-        microphoneStream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true
-            }
-        });
-
-        audioContext = new AudioContext();
-
-        const source = audioContext.createMediaStreamSource(microphoneStream);
-        const analyser = audioContext.createAnalyser();
-
-        analyser.fftSize = 2048;
-        source.connect(analyser);
-
-        const samples = new Float32Array(analyser.fftSize);
-
-        micButton.textContent = "MICROPHONE ACTIVE";
-        micButton.disabled = true;
-        statusText.textContent = "THE BOARD IS WAITING";
-
-        function listen() {
-            analyser.getFloatTimeDomainData(samples);
-
-            // Calculate the audio volume (RMS)
-            let sum = 0;
-
-            for (const sample of samples) {
-                sum += sample * sample;
-            }
-
-            const volume = Math.sqrt(sum / samples.length);
-            const now = Date.now();
-
-            // Adjust this threshold depending on room noise
-            const threshold = 0.035;
-
-            if (volume > threshold && !isResponding) {
-                if (!speechStartedAt) {
-                    speechStartedAt = now;
-                }
-
-                lastLoudAt = now;
-            }
-
-            // Trigger after speech has stopped
-            if (
-                speechStartedAt &&
-                lastLoudAt &&
-                now - lastLoudAt > 1400
-            ) {
-                const speechDuration = lastLoudAt - speechStartedAt;
-
-                speechStartedAt = null;
-                lastLoudAt = null;
-
-                // Ignore very short noises
-                if (
-                    speechDuration > 250 &&
-                    now - triggeredAt > 5000 &&
-                    !isResponding
-                ) {
-                    // Mic auto-trigger DISABLED: activation is now
-                    // controlled by the visitor phone via Firebase.
-                    // triggerResponse();
-                }
-            }
-
-            // Reset stale speech detection
-            if (speechStartedAt && now - speechStartedAt > 10000) {
-                speechStartedAt = null;
-                lastLoudAt = null;
-            }
-
-            animationFrame = requestAnimationFrame(listen);
-        }
-
-        listen();
-
-    } catch (error) {
-        console.error("Microphone error:", error);
-        statusText.textContent = "MICROPHONE ACCESS FAILED";
-    }
-}
-
-micButton.addEventListener("click", enableMicrophone);
 
 // Start with the planchette in the center
 resetPlanchette();

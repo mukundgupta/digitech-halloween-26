@@ -12,14 +12,17 @@
       <div class="board" id="board">
         <header class="board-header">
           <div class="ornament">☾</div>
-          <!-- <div class="title">THE MYSTERIES</div>
-          <div class="subtitle">ARE NEVER FAR AWAY</div> -->
+          <div class="title">OUIJA</div>
           <div class="ornament">☼</div>
         </header>
 
         <section class="special-answers">
-          <span class="board-symbol" data-letter="YES">YES</span>
-          <span class="board-symbol" data-letter="NO">NO</span>
+          <span class="board-symbol" data-letter="YES"
+            ><span class="glyph">☉</span>YES</span
+          >
+          <span class="board-symbol" data-letter="NO"
+            >NO<span class="glyph">☽</span></span
+          >
         </section>
 
         <section class="alphabet" id="alphabet">
@@ -50,7 +53,9 @@
         </div>
 
         <footer class="board-footer">
-          <span class="board-symbol" data-letter="GOODBYE">GOODBYE</span>
+          <span class="board-symbol goodbye" data-letter="GOODBYE"
+            >GOOD&nbsp;BYE</span
+          >
         </footer>
 
         <div class="planchette" id="planchette">
@@ -63,14 +68,8 @@
         <div class="status" id="status">THE BOARD IS WAITING</div>
         <div class="response" id="response"></div>
       </div>
-
-      <div class="controls">
-        <button id="micButton">ENABLE MICROPHONE</button>
-        <button id="testButton">TEST RESPONSE</button>
-      </div>
     </main>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="app.js"></script>
   </body>
 </html>
