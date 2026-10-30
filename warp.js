@@ -48,6 +48,11 @@
             width: 100vw;
             height: 100vh;
             transform-origin: 0 0;
+            /* Re-create the centering the <body> flex used to provide,
+               since page content now lives inside this wrapper. */
+            display: flex;
+            justify-content: center;
+            align-items: center;
             /* matrix3d is injected here by applyWarp() */
         }
 

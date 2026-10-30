@@ -81,7 +81,6 @@ function startSummon() {
         source: "",
     }).catch((err) => {
         console.error("[Visitor] Failed to create session:", err);
-        status.textContent = "CONNECTION ERROR - TRY AGAIN";
     });
 
     phase = "finish";

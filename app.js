@@ -115,8 +115,9 @@ function positionLetters() {
             letter.style.left = `${x}%`;
             letter.style.top = `${y}%`;
 
-            letter.style.transform =
-                `translate(-50%, -50%) rotate(${angle}deg)`;
+            // Store rotation as a CSS variable so the .active state can
+            // compose a scale on top without the inline transform winning.
+            letter.style.setProperty("--rot", `${angle}deg`);
         });
     });
 }
